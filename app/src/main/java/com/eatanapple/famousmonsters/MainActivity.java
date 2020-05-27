@@ -4,6 +4,9 @@ import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.view.View;
 import android.widget.Button;
+import android.widget.CheckBox;
+import android.widget.EditText;
+import android.widget.LinearLayout;
 import android.widget.RadioButton;
 import android.widget.RadioGroup;
 import android.widget.TextView;
@@ -36,9 +39,26 @@ public class MainActivity extends AppCompatActivity {
     @BindView(R.id.option4)
     RadioButton option4;
 
-
     @BindView(R.id.radioGroup)
     RadioGroup radioGroup;
+
+    @BindView(R.id.user_input_et)
+    EditText userInputEditText;
+
+    @BindView(R.id.option1_chk)
+    CheckBox optionOneCheckbox;
+
+    @BindView(R.id.option2_chk)
+    CheckBox optionTwoCheckbox;
+
+    @BindView(R.id.option3_chk)
+    CheckBox optionThreeCheckbox;
+
+    @BindView(R.id.option4_chk)
+    CheckBox optionFourCheckbox;
+
+    @BindView(R.id.checkbox_ll)
+    LinearLayout checkBoxLinearLayout;
 
     List<QuizQuestion> questions = new ArrayList<>();
     int currScore = 0;
@@ -49,46 +69,50 @@ public class MainActivity extends AppCompatActivity {
         setContentView(R.layout.activity_main);
         ButterKnife.bind(this);
 
-        retryButton.setVisibility(View.GONE);
-
         setupQuizData();
         setupFirstQuestion();
 
         nextQuestionButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
+            // Check if game is over OR update UI
+            if (currQuestion <= 5) {
                 int checked = radioGroup.getCheckedRadioButtonId();
-
                 // First verify that something was selected
                 if( checked == -1) {
                     Toast.makeText(getApplicationContext(), "Please select one of the options", Toast.LENGTH_SHORT).show();
                 } else {
-
                     // Next calculate and update the score
                     String answer = questions.get(currQuestion).getAnswer();
                     String userAnswer = ((RadioButton)findViewById(checked)).getText().toString();
                     if (answer.equals(userAnswer)) {
-                       currScore += 1;
-                       Toast.makeText(getApplicationContext(), "Correct!", Toast.LENGTH_SHORT).show();
+                        currScore += 1;
+                        Toast.makeText(getApplicationContext(), "Correct!", Toast.LENGTH_SHORT).show();
                     } else {
                         Toast.makeText(getApplicationContext(), "Incorrect", Toast.LENGTH_SHORT).show();
                     }
-
-                    // Check if game is over OR update UI
-                    if (currQuestion == 5) {
-                        nextQuestionButton.setVisibility(View.GONE);
-                        retryButton.setVisibility(View.VISIBLE);
-                        Toast.makeText(getApplicationContext(), "Game Over! You got " + currScore + " out of " + questions.size() + " correct!", Toast.LENGTH_SHORT).show();
-                    } else {
-                        radioGroup.clearCheck();
-                        currQuestion += 1;
-                        quizQuestionTextView.setText(questions.get(currQuestion).getQuestion());
-                        option1.setText(questions.get(currQuestion).getOptions()[0]);
-                        option2.setText(questions.get(currQuestion).getOptions()[1]);
-                        option3.setText(questions.get(currQuestion).getOptions()[2]);
-                        option4.setText(questions.get(currQuestion).getOptions()[3]);
-                    }
+                    updateQuestion();
+                    System.out.println("Value of currQuestion: " + currQuestion);
                 }
+            } else if (currQuestion == 6) {
+                String userInput = userInputEditText.getText().toString();
+                if (userInput.length() == 0) {
+                    Toast.makeText(getApplicationContext(), "You must enter an answer", Toast.LENGTH_SHORT).show();
+                } else {
+                    if (userInput.trim().toLowerCase().equals(questions.get(currQuestion).getAnswer().toLowerCase())) {
+                        currScore += 1;
+                        Toast.makeText(getApplicationContext(), "Correct!", Toast.LENGTH_SHORT).show();
+                    } else {
+                        Toast.makeText(getApplicationContext(), "Incorrect", Toast.LENGTH_SHORT).show();
+                    }
+                    updateQuestion();
+                }
+            } else if (currQuestion == 7) {
+//                nextQuestionButton.setVisibility(View.GONE);
+//                retryButton.setVisibility(View.VISIBLE);
+//                Toast.makeText(getApplicationContext(), "Game Over! You got " + currScore + " out of " + questions.size() + " correct!", Toast.LENGTH_LONG).show();
+            }
+
             }
         });
 
@@ -103,6 +127,30 @@ public class MainActivity extends AppCompatActivity {
                 retryButton.setVisibility(View.GONE);
             }
         });
+    }
+
+    private void updateQuestion() {
+        radioGroup.clearCheck();
+        currQuestion += 1;
+        quizQuestionTextView.setText(questions.get(currQuestion).getQuestion());
+        if (currQuestion <= 5) {
+            option1.setText(questions.get(currQuestion).getOptions()[0]);
+            option2.setText(questions.get(currQuestion).getOptions()[1]);
+            option3.setText(questions.get(currQuestion).getOptions()[2]);
+            option4.setText(questions.get(currQuestion).getOptions()[3]);
+            System.out.println("should only print for radio questions..");
+        } else if (currQuestion == 6) {
+            radioGroup.setVisibility(View.GONE);
+            userInputEditText.setVisibility(View.VISIBLE);
+        } else {
+            userInputEditText.setVisibility(View.GONE);
+            checkBoxLinearLayout.setVisibility(View.VISIBLE);
+            optionOneCheckbox.setText(questions.get(currQuestion).getOptions()[0]);
+            optionTwoCheckbox.setText(questions.get(currQuestion).getOptions()[1]);
+            optionThreeCheckbox.setText(questions.get(currQuestion).getOptions()[2]);
+            optionFourCheckbox.setText(questions.get(currQuestion).getOptions()[3]);
+            System.out.println("In seventh question..");
+        }
     }
 
     private void setupFirstQuestion() {
@@ -143,6 +191,15 @@ public class MainActivity extends AppCompatActivity {
         questions.add(new QuizQuestion("Which one of these is NOT a Stephen King adaptation?",
                 "Stranger Things", new String[] {
                 "IT", "Cujo", "Stranger Things", "Pet Sematary"}
+        ));
+
+        questions.add(new QuizQuestion("What is the name of the killer doll in the Child's Play series?",
+                "Chucky", null
+        ));
+
+        questions.add(new QuizQuestion("Which one of these movies is not about ghosts?",
+                "Get Out", new String[] {
+                "The Sixth Sense", "Get Out", "Paranormal Activity", "Poltergeist"}
         ));
 
     }
