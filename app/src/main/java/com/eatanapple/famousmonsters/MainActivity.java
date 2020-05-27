@@ -22,7 +22,10 @@ public class MainActivity extends AppCompatActivity {
     TextView quizQuestionTextView;
 
     @BindView(R.id.next_btn)
-    Button nextQuestionBtn;
+    Button nextQuestionButton;
+
+    @BindView(R.id.retry_btn)
+    Button retryButton;
 
     @BindView(R.id.option1)
     RadioButton option1;
@@ -46,24 +49,21 @@ public class MainActivity extends AppCompatActivity {
         setContentView(R.layout.activity_main);
         ButterKnife.bind(this);
 
+        retryButton.setVisibility(View.GONE);
+
         setupQuizData();
+        setupFirstQuestion();
 
-        quizQuestionTextView.setText(questions.get(0).getQuestion());
-        option1.setText(questions.get(0).getOptions()[0]);
-        option2.setText(questions.get(0).getOptions()[1]);
-        option3.setText(questions.get(0).getOptions()[2]);
-        option4.setText(questions.get(0).getOptions()[3]);
-
-
-
-        nextQuestionBtn.setOnClickListener(new View.OnClickListener() {
+        nextQuestionButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
                 int checked = radioGroup.getCheckedRadioButtonId();
+
                 // First verify that something was selected
                 if( checked == -1) {
                     Toast.makeText(getApplicationContext(), "Please select one of the options", Toast.LENGTH_SHORT).show();
                 } else {
+
                     // Next calculate and update the score
                     String answer = questions.get(currQuestion).getAnswer();
                     String userAnswer = ((RadioButton)findViewById(checked)).getText().toString();
@@ -74,11 +74,13 @@ public class MainActivity extends AppCompatActivity {
                         Toast.makeText(getApplicationContext(), "Incorrect", Toast.LENGTH_SHORT).show();
                     }
 
-
-
+                    // Check if game is over OR update UI
                     if (currQuestion == 5) {
+                        nextQuestionButton.setVisibility(View.GONE);
+                        retryButton.setVisibility(View.VISIBLE);
                         Toast.makeText(getApplicationContext(), "Game Over! You got " + currScore + " out of " + questions.size() + " correct!", Toast.LENGTH_SHORT).show();
                     } else {
+                        radioGroup.clearCheck();
                         currQuestion += 1;
                         quizQuestionTextView.setText(questions.get(currQuestion).getQuestion());
                         option1.setText(questions.get(currQuestion).getOptions()[0]);
@@ -86,11 +88,29 @@ public class MainActivity extends AppCompatActivity {
                         option3.setText(questions.get(currQuestion).getOptions()[2]);
                         option4.setText(questions.get(currQuestion).getOptions()[3]);
                     }
-
-                    // Lastly, Toast the users score if the quiz is over
                 }
             }
         });
+
+        retryButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                currQuestion = 0;
+                currScore = 0;
+                radioGroup.clearCheck();
+                setupFirstQuestion();
+                nextQuestionButton.setVisibility(View.VISIBLE);
+                retryButton.setVisibility(View.GONE);
+            }
+        });
+    }
+
+    private void setupFirstQuestion() {
+        quizQuestionTextView.setText(questions.get(0).getQuestion());
+        option1.setText(questions.get(0).getOptions()[0]);
+        option2.setText(questions.get(0).getOptions()[1]);
+        option3.setText(questions.get(0).getOptions()[2]);
+        option4.setText(questions.get(0).getOptions()[3]);
     }
 
     private void setupQuizData() {
