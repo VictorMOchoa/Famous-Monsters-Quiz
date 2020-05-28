@@ -2,4 +2,5 @@
     <string name="app_name">Famous Monsters</string>
     <string name="next">NEXT</string>
     <string name="retry">RETRY</string>
+    <string name="score">GET SCORE</string>
 </resources>
